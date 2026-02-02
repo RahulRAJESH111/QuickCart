@@ -1,36 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { assets, BoxIcon, HomeIcon } from "@/assets/assets";
 import Link from "next/link";
 import Image from "next/image";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
 import { useAppContext } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Package } from "lucide-react"; // Package = My Orders icon
+import { ShoppingCart, Package } from "lucide-react";
 
 const Navbar = () => {
   const { isSeller } = useAppContext();
-  const { user, isLoaded } = useUser(); // ✅ Clerk user
-
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
-  // ✅ Prevent rendering until user state is loaded to avoid hydration errors
-  if (!isLoaded) return null;
+  // Hydration fix for Clerk
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!isLoaded || !mounted) return null;
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700">
 
       {/* Logo */}
-      <Image
-        className="cursor-pointer w-28 md:w-32"
-        onClick={() => router.push("/")}
-        src={assets.logo}
-        alt="logo"
-      />
+      <div className="cursor-pointer" onClick={() => router.push("/")}>
+        <Image
+          src={assets.logo}
+          alt="logo"
+          width={128}
+          height={32}
+          className="w-28 md:w-32"
+        />
+      </div>
 
       {/* Desktop Menu */}
-      <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
+      <div className="hidden max-md:flex lg:flex items-center gap-4 lg:gap-8">
         <Link href="/">Home</Link>
         <Link href="/all-products">Shop</Link>
         <Link href="/">About Us</Link>
@@ -47,43 +51,34 @@ const Navbar = () => {
       </div>
 
       {/* Desktop Right */}
-      <ul className="hidden md:flex items-center gap-4">
-        <Image src={assets.search_icon} alt="search" className="w-4 h-4" />
+      <div className="hidden md:flex items-center gap-4">
+        <Image
+          src={assets.search_icon}
+          alt="search"
+          width={16}
+          height={16}
+          className="w-4 h-4"
+        />
 
         {user ? (
-          <UserButton afterSignOutUrl="/">
-            <UserButton.MenuItems>
-
-              <UserButton.Action
-                label="Cart"
-                labelIcon={<ShoppingCart size={16} />}
-                onClick={() => router.push("/cart")}
-              />
-
-              <UserButton.Action
-                label="My Orders"
-                labelIcon={<Package size={16} />}
-                onClick={() => router.push("/my-orders")}
-              />
-
-              {isSeller && (
-                <UserButton.Action
-                  label="Seller Dashboard"
-                  onClick={() => router.push("/seller")}
-                />
-              )}
-
-            </UserButton.MenuItems>
-          </UserButton>
+          <div className="relative">
+            <UserButton afterSignOutUrl="/" />
+            {/* Custom Dropdown if needed */}
+          </div>
         ) : (
-          <SignInButton asChild>
+          <SignInButton mode="modal">
             <button className="flex items-center gap-2">
-              <Image src={assets.user_icon} alt="user" />
+              <Image
+                src={assets.user_icon}
+                alt="user"
+                width={24}
+                height={24}
+              />
               Sign In
             </button>
           </SignInButton>
         )}
-      </ul>
+      </div>
 
       {/* Mobile Menu */}
       <div className="flex items-center md:hidden gap-3">
@@ -98,43 +93,19 @@ const Navbar = () => {
         )}
 
         {user ? (
-          <UserButton afterSignOutUrl="/">
-            <UserButton.MenuItems>
-
-              <UserButton.Action
-                label="Home"
-                labelIcon={<HomeIcon size={16} />}
-                onClick={() => router.push("/")}
-              />
-              <UserButton.Action
-                label="Products"
-                labelIcon={<BoxIcon size={16} />}
-                onClick={() => router.push("/all-products")}
-              />
-              <UserButton.Action
-                label="Cart"
-                labelIcon={<ShoppingCart size={16} />}
-                onClick={() => router.push("/cart")}
-              />
-              <UserButton.Action
-                label="My Orders"
-                labelIcon={<Package size={16} />}
-                onClick={() => router.push("/my-orders")}
-              />
-
-              {isSeller && (
-                <UserButton.Action
-                  label="Seller Dashboard"
-                  onClick={() => router.push("/seller")}
-                />
-              )}
-
-            </UserButton.MenuItems>
-          </UserButton>
+          <div className="relative">
+            <UserButton afterSignOutUrl="/" />
+            {/* For mobile, consider a dropdown menu here */}
+          </div>
         ) : (
-          <SignInButton asChild>
+          <SignInButton mode="modal">
             <button className="flex items-center gap-2">
-              <Image src={assets.user_icon} alt="user" />
+              <Image
+                src={assets.user_icon}
+                alt="user"
+                width={24}
+                height={24}
+              />
               Sign In
             </button>
           </SignInButton>
